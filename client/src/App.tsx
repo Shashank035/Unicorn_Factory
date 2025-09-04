@@ -14,6 +14,8 @@ type Project = {
   supply: number
   reserve: number
   capReached: boolean
+  tokenSymbol?: string
+  fundingGoal?: number
 }
 
 type Holding = { userId: string; projectId: string; balance: number }
@@ -138,10 +140,12 @@ function Dashboard({ uid, onBrowse, onGetStarted }: { uid: string; onBrowse?: ()
     const onBuy = (e: MessageEvent) => {
       try {
         const d = JSON.parse(e.data) as { projectId: string; amount?: number }
-        if (d?.projectId && typeof d.amount === 'number') {
-          setProjects(prev => prev.map(p => p.id === d.projectId ? { ...p, reserve: p.reserve + d.amount } : p))
+        if (d?.projectId) {
+          const inc = typeof d.amount === 'number' ? d.amount : 0
+          setProjects(prev => prev.map(p => p.id === d.projectId ? { ...p, reserve: p.reserve + inc } : p))
           const proj = projects.find(p => p.id === d.projectId)
-          addAct(`Contribution: ${proj?.name || d.projectId} +${(d.amount as number).toFixed ? (d.amount as number).toFixed(2) : d.amount}`)
+          const incText = typeof d.amount === 'number' ? d.amount.toFixed(2) : '0.00'
+          addAct(`Contribution: ${proj?.name || d.projectId} +${incText}`)
         } else { load().catch(() => {}) }
       } catch { load().catch(() => {}) }
     }
