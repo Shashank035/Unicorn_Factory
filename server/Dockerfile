@@ -8,7 +8,7 @@ RUN npm install --no-audit --no-fund
 
 # Copy source and build
 COPY . .
-RUN npm run build
+RUN npm install -g typescript && npm run build
 
 # Runtime env
 ENV NODE_ENV=production
