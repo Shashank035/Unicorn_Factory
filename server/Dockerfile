@@ -3,7 +3,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund
+# Use npm install to avoid lockfile-sync failures in CI (serverless-http added)
+RUN npm install --no-audit --no-fund
 
 # Copy source and build
 COPY . .
