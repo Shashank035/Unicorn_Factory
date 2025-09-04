@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
 // Debug: Log the API URL being used
 console.log('API_URL configured as:', API_URL)
