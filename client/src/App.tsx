@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000'
 
+// Debug: Log the API URL being used
+console.log('API_URL configured as:', API_URL)
+console.log('Environment variables:', import.meta.env)
+
 type Project = {
   id: string
   founderId: string
@@ -32,16 +36,35 @@ function useUserId() {
 }
 
 async function api<T>(path: string, opts: RequestInit = {}, userId?: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-id': userId || '',
-      ...(opts.headers || {}),
-    },
-  })
-  if (!res.ok) throw new Error(await res.text())
-  return res.json()
+  try {
+    console.log('Making API request to:', `${API_URL}${path}`)
+    console.log('Request options:', { ...opts, headers: { 'Content-Type': 'application/json', 'x-user-id': userId || '', ...(opts.headers || {}) } })
+    
+    const res = await fetch(`${API_URL}${path}`, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': userId || '',
+        ...(opts.headers || {}),
+      },
+    })
+    
+    console.log('Response status:', res.status)
+    console.log('Response headers:', Object.fromEntries(res.headers.entries()))
+    
+    if (!res.ok) {
+      const errorText = await res.text()
+      console.error('API Error:', errorText)
+      throw new Error(`HTTP ${res.status}: ${errorText}`)
+    }
+    
+    const data = await res.json()
+    console.log('API Response:', data)
+    return data
+  } catch (error) {
+    console.error('API Request failed:', error)
+    throw error
+  }
 }
 
 function useWallet() {

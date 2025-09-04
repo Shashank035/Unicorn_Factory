@@ -33,7 +33,22 @@ const SLOPE = 0.0001
 const FUNDING_CAP = 100_000
 
 export const app = express()
-app.use(cors())
+
+// CORS configuration for production deployment
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://unicorn-factory.pages.dev',
+    'https://*.pages.dev',
+    'https://*.vercel.app',
+    'https://*.netlify.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id']
+}))
+
 app.use(compression())
 app.use(express.json())
 app.use(morgan('dev'))
@@ -68,18 +83,48 @@ app.get('/', (_req: Request, res: Response) => { res.json({ name: 'Unicorn Facto
 
 // Projects CRUD-lite
 app.post('/projects', (req: Request, res: Response) => {
-  const userId = getUserId(req)
-  const { name, videoUrl, summary, resumesUrl, plan, tokenSymbol, fundingGoal } = req.body || {}
-  if (!name || !summary || !plan) return res.status(400).json({ error: 'name, summary, plan required' })
-  const id = nanoid(8)
-  const project: Project = { id, founderId: userId, name, videoUrl, summary, resumesUrl, plan, createdAt: Date.now(), supply: 0, reserve: 0, capReached: false, tokenSymbol, fundingGoal: typeof fundingGoal === 'number' && fundingGoal > 0 ? fundingGoal : FUNDING_CAP }
-  projects.set(id, project)
-  const founderKey = `${userId}:${id}`
-  const founderHolding = holdings.get(founderKey) || { userId, projectId: id, balance: 0 }
-  founderHolding.balance += 100
-  holdings.set(founderKey, founderHolding)
-  project.supply += 100
-  res.json(project)
+  try {
+    console.log('POST /projects - Headers:', req.headers)
+    console.log('POST /projects - Body:', req.body)
+    
+    const userId = getUserId(req)
+    const { name, videoUrl, summary, resumesUrl, plan, tokenSymbol, fundingGoal } = req.body || {}
+    
+    if (!name || !summary || !plan) {
+      console.log('Missing required fields:', { name: !!name, summary: !!summary, plan: !!plan })
+      return res.status(400).json({ error: 'name, summary, plan required' })
+    }
+    
+    const id = nanoid(8)
+    const project: Project = { 
+      id, 
+      founderId: userId, 
+      name, 
+      videoUrl, 
+      summary, 
+      resumesUrl, 
+      plan, 
+      createdAt: Date.now(), 
+      supply: 0, 
+      reserve: 0, 
+      capReached: false, 
+      tokenSymbol, 
+      fundingGoal: typeof fundingGoal === 'number' && fundingGoal > 0 ? fundingGoal : FUNDING_CAP 
+    }
+    
+    projects.set(id, project)
+    const founderKey = `${userId}:${id}`
+    const founderHolding = holdings.get(founderKey) || { userId, projectId: id, balance: 0 }
+    founderHolding.balance += 100
+    holdings.set(founderKey, founderHolding)
+    project.supply += 100
+    
+    console.log('Project created successfully:', { id, name })
+    res.json(project)
+  } catch (error) {
+    console.error('Error creating project:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
 })
 app.get('/projects', (_req: Request, res: Response) => { res.json(Array.from(projects.values()).sort((a, b) => b.createdAt - a.createdAt)) })
 app.get('/projects/:id', (req: Request, res: Response) => { const p = projects.get(req.params.id); if (!p) return res.status(404).json({ error: 'not found' }); res.json(p) })
