@@ -399,7 +399,8 @@ app.post('/dev/seed', (req: Request, res: Response) => {
     id,
     founderId: founder,
     name: 'Aurora AI Vision',
-    videoUrl: 'https://example.com/video',
+    // Demo video supplied by user (Google Drive preview link)
+    videoUrl: 'https://drive.google.com/uc?export=preview&id=1Gh7yPrsseHqk9zk1rlr3CIecpQR0nuGS',
     summary: 'Self-hosted multimodal vision stack for robotics with on-device inference.',
     resumesUrl: 'https://example.com/team',
     plan: 'MVP -> Pilots -> Open-source SDK -> Enterprise',
