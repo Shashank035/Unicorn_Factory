@@ -3,17 +3,18 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files first
+COPY package.json package-lock.json ./
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm install
 
 # Copy source code
-COPY . .
+COPY src/ ./src/
+COPY tsconfig.json ./
 
-# Build the application
-RUN npm run build
+# Build the application using npx to avoid permission issues
+RUN npx tsc
 
 # Remove dev dependencies to reduce image size
 RUN npm prune --production
