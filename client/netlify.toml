@@ -8,6 +8,6 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://unicorn-factory-api.onrender.com/:splat"
+  to = "https://unicorn-factory11-1.onrender.com/:splat"
   status = 200
 
